@@ -9,6 +9,10 @@
    <div id="result"></div>
 
    <script>
+      function onError(error) {
+         console.error("Ntfy connection error:", error);
+      }
+
       function onMessage(message) {
          const messagesDiv = document.getElementById('result');
          const messageEl = document.createElement('div');
