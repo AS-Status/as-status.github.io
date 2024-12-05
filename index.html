@@ -24,7 +24,7 @@
        const go = new Go(); // 初始化 Go 執行環境
        WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject) .then(result => {
           go.run(result.instance);
-          ntfyConnect("https://ntfy.sinica.us.kg/", "sinica_statusdashboard");
+          ntfyConnect("https://ntfy.sinica.us.kg", "sinica_statusdashboard");
           // StartFromJavascript("sinica_statusdashboard");
           console.log('WASM 模組已載入');
        });
