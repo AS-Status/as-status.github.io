@@ -10,26 +10,26 @@
 
     <script>
         // 載入 WASM 模組
-	const go = new Go(); // 初始化 Go 執行環境
-        WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject)
-            .then(result => {
-	       go.run(result.instance);
-               StartFromJavascript("sinica_statusdashboard");
-               console.log('WASM 模組已載入');
-            });
+       const go = new Go(); // 初始化 Go 執行環境
+       WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject)
+           .then(result => {
+              go.run(result.instance);
+              // StartFromJavascript("sinica_statusdashboard");
+              console.log('WASM 模組已載入');
+           });
 
-        // 呼叫 Go 的跨域函數
-        function fetchCrossdomainData() {
-            goFetchData()
-                .then(result => {
-                    console.log('成功獲取資料:', result);
-                    document.getElementById('result').innerText = 
-                        JSON.stringify(result);
-                })
-                .catch(error => {
-                    console.error('獲取資料失敗:', error);
-                });
-        }
+       // 呼叫 Go 的跨域函數
+       function fetchCrossdomainData() {
+           goFetchData()
+               .then(result => {
+                   console.log('成功獲取資料:', result);
+                   document.getElementById('result').innerText = 
+                       JSON.stringify(result);
+               })
+               .catch(error => {
+                   console.error('獲取資料失敗:', error);
+               });
+       }
     </script>
 </body>
 </html>
