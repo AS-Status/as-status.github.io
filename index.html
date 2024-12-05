@@ -6,17 +6,24 @@
    <script src="js/wasm_exec.js"></script>
 </head>
 <body>
-    <div id="result"></div>
+   <div id="result"></div>
 
-    <script>
+   <script>
+      function onMessage(message) {
+         const messagesDiv = document.getElementById('result');
+         const messageEl = document.createElement('div');
+         messageEl.textContent = message;
+         messagesDiv.appendChild(messageEl);
+      }
+
         // 載入 WASM 模組
        const go = new Go(); // 初始化 Go 執行環境
-       WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject)
-           .then(result => {
-              go.run(result.instance);
-              StartFromJavascript("sinica_statusdashboard");
-              console.log('WASM 模組已載入');
-           });
+       WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject) .then(result => {
+          go.run(result.instance);
+          ntfyConnect("https://ntfy.sinica.us.kg/", "sinica_statusdashboard");
+          // StartFromJavascript("sinica_statusdashboard");
+          console.log('WASM 模組已載入');
+       });
 
        // 呼叫 Go 的跨域函數
        function fetchCrossdomainData() {
@@ -32,5 +39,6 @@
        }
 
     </script>
+   <script src="https://unpkg.com/go-wasm/dist/go.js"></script>
 </body>
 </html>
