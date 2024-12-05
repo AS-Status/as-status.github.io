@@ -14,7 +14,7 @@
        WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject)
            .then(result => {
               go.run(result.instance);
-              StartFromJavascript("sinica_statusdashboard");
+              // StartFromJavascript("sinica_statusdashboard");
               console.log('WASM 模組已載入');
            });
 
@@ -30,6 +30,83 @@
                    console.error('獲取資料失敗:', error);
                });
        }
+
+
+class NtfyClient {
+    constructor(url, topic, options = {}) {
+        this.url = url;
+        this.topic = topic;
+        this.options = {
+            reconnectInterval: 3000,
+            maxReconnectAttempts: 10,
+            ...options
+        };
+        this.reconnectAttempts = 0;
+        this.ws = null;
+        this.connect();
+    }
+
+    connect() {
+        this.ws = new WebSocket(`${this.url}/${this.topic}`);
+
+        this.ws.onopen = () => {
+            console.log('NTFY connection established');
+            this.reconnectAttempts = 0;
+        };
+
+        this.ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            this.handleMessage(message);
+        };
+
+        this.ws.onclose = (event) => {
+            console.log('NTFY connection closed', event);
+            this.reconnect();
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('NTFY WebSocket error:', error);
+            this.reconnect();
+        };
+    }
+
+    handleMessage(message) {
+        console.log('Received message:', message);
+        // 自定義訊息處理邏輯
+    }
+
+    reconnect() {
+        if (this.reconnectAttempts < this.options.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            setTimeout(() => {
+                console.log(`Reconnecting... (Attempt ${this.reconnectAttempts})`);
+                this.connect();
+            }, this.options.reconnectInterval);
+        } else {
+            console.error('Max reconnect attempts reached');
+        }
+    }
+
+    send(message) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(message));
+        } else {
+            console.warn('WebSocket not connected. Message not sent.');
+        }
+    }
+
+    close() {
+        if (this.ws) {
+            this.ws.close();
+        }
+    }
+}
+
+       // 使用範例
+const ntfyClient = new NtfyClient('wss://ntfy.sinica.us.kg', 'sinica_statusdashboard', {
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 15
+});
     </script>
 </body>
 </html>
