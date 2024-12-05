@@ -34,80 +34,113 @@
 */
 
 class NtfyClient {
-    constructor(url, topic, options = {}) {
-        this.url = url;
+    constructor(topic, options = {}) {
         this.topic = topic;
-        this.options = {
-            reconnectInterval: 3000,
-            maxReconnectAttempts: 10,
-            ...options
-        };
+        this.serverUrl = options.serverUrl || 'https://ntfy.sh';
+        this.reconnectInterval = options.reconnectInterval || 5000;
+        this.maxReconnectAttempts = options.maxReconnectAttempts || 10;
         this.reconnectAttempts = 0;
-        this.ws = null;
+        this.websocket = null;
+        this.eventListeners = {};
+
         this.connect();
     }
 
     connect() {
-        this.ws = new WebSocket(`${this.url}/${this.topic}`);
+        try {
+            const wsUrl = this.serverUrl.replace('https://', 'wss://') + `/${this.topic}`;
+            this.websocket = new WebSocket(wsUrl);
 
-        this.ws.onopen = () => {
-            console.log('NTFY connection established');
-            this.reconnectAttempts = 0;
-        };
+            this.websocket.onopen = () => {
+                this.reconnectAttempts = 0;
+                this.triggerEvent('connect');
+            };
 
-        this.ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            this.handleMessage(message);
-        };
+            this.websocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                this.triggerEvent('message', message);
+            };
 
-        this.ws.onclose = (event) => {
-            console.log('NTFY connection closed', event);
+            this.websocket.onclose = (event) => {
+                this.triggerEvent('disconnect', event);
+                this.reconnect();
+            };
+
+            this.websocket.onerror = (error) => {
+                this.triggerEvent('error', error);
+                this.reconnect();
+            };
+        } catch (error) {
+            console.error('WebSocket connection error:', error);
             this.reconnect();
-        };
-
-        this.ws.onerror = (error) => {
-            console.error('NTFY WebSocket error:', error);
-            this.reconnect();
-        };
-    }
-
-    handleMessage(message) {
-        console.log('Received message:', message);
-        // 自定義訊息處理邏輯
+        }
     }
 
     reconnect() {
-        if (this.reconnectAttempts < this.options.maxReconnectAttempts) {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            setTimeout(() => {
-                console.log(`Reconnecting... (Attempt ${this.reconnectAttempts})`);
-                this.connect();
-            }, this.options.reconnectInterval);
+            setTimeout(() => this.connect(), this.reconnectInterval);
         } else {
-            console.error('Max reconnect attempts reached');
+            this.triggerEvent('reconnect_failed');
         }
     }
 
     send(message) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(message));
-        } else {
-            console.warn('WebSocket not connected. Message not sent.');
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            fetch(`${this.serverUrl}/${this.topic}`, {
+                method: 'POST',
+                body: message,
+                headers: {
+                    'Content-Type': 'text/plain',
+                    'Title': 'Client Message'
+                }
+            });
         }
     }
 
+    on(event, callback) {
+        if (!this.eventListeners[event]) {
+            this.eventListeners[event] = [];
+        }
+        this.eventListeners[event].push(callback);
+    }
+
+    triggerEvent(event, data) {
+        const listeners = this.eventListeners[event] || [];
+        listeners.forEach(callback => callback(data));
+    }
+
     close() {
-        if (this.ws) {
-            this.ws.close();
+        if (this.websocket) {
+            this.websocket.close();
         }
     }
 }
 
-       // 使用範例
-const ntfyClient = new NtfyClient('wss://ntfy.sinica.us.kg', 'sinica_statusdashboard', {
-    reconnectInterval: 5000,
-    maxReconnectAttempts: 15
+// Usage Example
+const client = new NtfyClient('sinica_statusdashboard', {
+    serverUrl: 'https://ntfy.sinica.us.kg',
+    reconnectInterval: 3000
 });
+
+client.on('connect', () => {
+    console.log('Connected to NTFY');
+});
+
+client.on('message', (message) => {
+    console.log('Received message:', message);
+});
+
+client.on('error', (error) => {
+    console.error('NTFY connection error:', error);
+});
+
+client.on('disconnect', () => {
+    console.log('Disconnected from NTFY');
+});
+
+// Sending a message
+client.send('Hello, NTFY!');
     </script>
 </body>
 </html>
