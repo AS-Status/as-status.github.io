@@ -1,48 +1,123 @@
 <!DOCTYPE html>
-<html lang="zh_TW">
+<html lang="en">
 <head>
-   <meta charset="utf-8">
-   <title>WASM 跨域範例</title>
-   <script src="js/wasm_exec.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academia Sinica Service Status Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+  </style>
 </head>
-<body>
-   <div id="result"></div>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+   <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
+   <!-- Header -->
+   <div class="flex items-center justify-between mb-4">
+     <h1 class="text-2xl font-bold text-gray-800">Academia Sinica 服務狀態 <span class="text-black">Dashboard</span></h1>
+     <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold">連線中...</span>
+   </div>
 
-   <script>
-      function onError(error) {
-         console.error("Ntfy connection error:", error);
+   <!-- Status Overview -->
+   <h2 class="text-lg font-semibold mb-4">總體狀態</h2>
+
+    <!-- Status Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="statusContainer">
+    </div>
+  </div>
+<script>
+   const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "ERROR": "⚠️"};
+   const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
+   function CreateBox(elementName, curStatus, lastupdate) {
+      const container = document.createElement('div');
+      container.className = 'p-4 border rounded-lg shadow-sm hover:shadow-md transition';
+      // 2. 建立內部的 "flex" 容器
+      const flexContainer = document.createElement('div');
+      flexContainer.className = 'flex items-center justify-between';
+      // 3. 建立標題 <h3>
+      const titlez = document.createElement('h3');
+      titlez.className = 'text-gray-700 font-semibold';
+      titlez.textContent = elementName;
+      // 4. 建立綠色的 "✔️" 圖示
+      const checkMark = document.createElement('div');
+      let colorz = "green";
+      if(curStatus == "UNAVAILABLE")  colorz = "red";
+      else if(curStatus == "ERROR")   colorz = "yellow";
+      checkMark.className = 'text-' + colorz + '-500 text-2xl';
+      checkMark.textContent = statuz[curStatus];  //'✔️';
+      // 5. 將 <h3> 和 ✔️ 圖示放到 "flex" 容器中
+      flexContainer.appendChild(titlez);
+      flexContainer.appendChild(checkMark);
+
+      // 6. 建立 "正常" 標籤 <span>
+      const statusLabel = document.createElement('span');
+      statusLabel.className = 'text-sm bg-' + colorz + '-100 text-' + colorz + '-700 px-2 py-1 rounded-full font-medium inline-block mt-2';
+      let txt = '正常';
+      if(curStatus == "UNAVAILABLE") txt = '中斷';
+      else if(curStatus == "ERROR")  txt = '警告';
+      statusLabel.textContent = txt;
+      // 7. 建立描述 <p>
+      const updateInfo = document.createElement('p');
+      updateInfo.className = 'text-gray-500 text-sm mt-1';
+      updateInfo.textContent = '最後更新: ' + lastupdate;   //1 分鐘前';
+      // 8. 將所有元素組合到父容器中
+      container.appendChild(flexContainer);
+      container.appendChild(statusLabel);
+      container.appendChild(updateInfo);
+
+      return container;
+   }
+
+   function timeAgo(diffInSeconds ) {
+      if(diffInSeconds < 60) { return `${diffInSeconds} 秒前`; }
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      if(diffInMinutes < 60) {
+         return `${diffInMinutes} 分鐘前`;
       }
-
-      function onMessage(message) {
-         const messagesDiv = document.getElementById('result');
-         const messageEl = document.createElement('div');
-         messageEl.textContent = message;
-         messagesDiv.appendChild(messageEl);
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      if(diffInHours < 24) {
+         return `${diffInHours} 小時前`;
       }
+      const diffInDays = Math.floor(diffInHours / 24);
+      if(diffInDays < 30) {
+         return `${diffInDays} 天前`;
+      }
+      const diffInMonths = Math.floor(diffInDays / 30);
+      if(diffInMonths < 12) {
+         return `${diffInMonths} 個月前`;
+      }
+      const diffInYears = Math.floor(diffInDays / 365);
+      return `${diffInYears} 年前`;
+   }
+   
+   function init() {  // 初始化
+      let url = "https://script.google.com/macros/s/AKfycbzAknvL7tYEJuzDC1W8KqtTJASTvgUTDHs7DwJPXKw0A_KhqLfKlQhoubcoxV_h1F4x/exec";
+      fetch(url).then(response => {
+         if(!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+         }
+         return response.json();
+      }).then(data => {
 
-        // 載入 WASM 模組
-       const go = new Go(); // 初始化 Go 執行環境
-       WebAssembly.instantiateStreaming(fetch('js/ntfy.wasm'), go.importObject) .then(result => {
-          go.run(result.instance);
-          ntfyConnect("wss://ntfy.sinica.us.kg", "sinica_statusdashboard");
-          // StartFromJavascript("sinica_statusdashboard");
-          console.log('WASM 模組已載入');
-       });
+         var contx = document.querySelector("#statusContainer");
+         const currentTime = new Date(); // 取得當前時間
+         data.forEach(function(item) {
+            const givenTime = new Date(item["updatetime"]); // 將 ISO 字串轉換為 Date 物件
+            const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
+            let mins = Math.floor(diffInSeconds / 60);  // 分
+            if(mins > parseInt(item["period"]))  item["status"] = "ERROR";
+            let divz = CreateBox(item["service name"], item["status"], timeAgo(diffInSeconds));
+             contx.appendChild(divz);
+	 });
+         console.log('Received data:', data); // 將資料輸出到瀏覽器控制台
+      }).catch(error => { console.error('Error fetching data:', error); });
+   }
+   init();
 
-       // 呼叫 Go 的跨域函數
-       function fetchCrossdomainData() {
-           goFetchData()
-               .then(result => {
-                   console.log('成功獲取資料:', result);
-                   document.getElementById('result').innerText = 
-                       JSON.stringify(result);
-               })
-               .catch(error => {
-                   console.error('獲取資料失敗:', error);
-               });
-       }
-
-    </script>
-   <script src="https://unpkg.com/go-wasm/dist/go.js"></script>
+      // document.body.appendChild(container); // 9. 將容器附加到網頁中的某個元素（例如 body 或其他容器）
+</script>
 </body>
 </html>
+
