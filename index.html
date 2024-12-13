@@ -17,11 +17,13 @@
    <!-- Header -->
    <div class="flex items-center justify-between mb-4">
      <h1 class="text-2xl font-bold text-gray-800">Academia Sinica 服務狀態 <span class="text-black">Dashboard</span></h1>
-     <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold">連線中...</span>
+     <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold" id="connectInfo">連線中...</span>
    </div>
 
    <!-- Status Overview -->
-   <h2 class="text-lg font-semibold mb-4">總體狀態</h2>
+   <h2 class="text-lg font-semibold mb-4">總體狀態
+      <small>AVAILABLE: ✔️, UNAVAILABLE: ❌, ERROR: ⚠️</small>
+   </h2>
 
     <!-- Status Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="statusContainer">
@@ -30,6 +32,9 @@
 <script>
    const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "ERROR": "⚠️"};
    const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
+   const connectInfo = document.querySelector("#connectInfo");
+   var lastdatetime = new Date(); // 取得當前時間
+
    function CreateBox(elementName, curStatus, lastupdate) {
       const container = document.createElement('div');
       container.className = 'p-4 border rounded-lg shadow-sm hover:shadow-md transition';
@@ -70,7 +75,7 @@
       return container;
    }
 
-   function timeAgo(diffInSeconds ) {
+   function timeAgo(diffInSeconds) {
       if(diffInSeconds < 60) { return `${diffInSeconds} 秒前`; }
       const diffInMinutes = Math.floor(diffInSeconds / 60);
       if(diffInMinutes < 60) {
@@ -100,8 +105,8 @@
          }
          return response.json();
       }).then(data => {
-
          var contx = document.querySelector("#statusContainer");
+         contx.innerHTML = "";
          const currentTime = new Date(); // 取得當前時間
          data.forEach(function(item) {
             const givenTime = new Date(item["updatetime"]); // 將 ISO 字串轉換為 Date 物件
@@ -109,11 +114,16 @@
             let mins = Math.floor(diffInSeconds / 60);  // 分
             if(mins > parseInt(item["period"]))  item["status"] = "ERROR";
             let divz = CreateBox(item["service name"], item["status"], timeAgo(diffInSeconds));
-             contx.appendChild(divz);
+            contx.appendChild(divz);
 	 });
-         console.log('Received data:', data); // 將資料輸出到瀏覽器控制台
+         const givenTime = new Date(lastdatetime.toISOString());
+         const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
+         connectInfo.innerHTML = timeAgo(diffInSeconds) + "更新";
       }).catch(error => { console.error('Error fetching data:', error); });
    }
+   setInterval(() => {
+      init();
+   }, 60000); // 每 60 秒更新一次
    init();
 
       // document.body.appendChild(container); // 9. 將容器附加到網頁中的某個元素（例如 body 或其他容器）
