@@ -30,6 +30,7 @@
     </div>
   </div>
 <script>
+   var currentLang = 'zh';
    const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "ERROR": "⚠️"};
    const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
    const connectInfo = document.querySelector("#connectInfo");
@@ -118,7 +119,7 @@
 	 });
          const givenTime = new Date(lastdatetime.toISOString());
          const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
-         connectInfo.innerHTML = timeAgo(diffInSeconds) + "更新";
+         connectInfo.innerHTML = timeAgo(diffInSeconds) + (currentLang === 'zh' ? "更新" : "Update");
       }).catch(error => { console.error('Error fetching data:', error); });
    }
    setInterval(() => {
@@ -126,8 +127,13 @@
    }, 60000); // 每 60 秒更新一次
    init();
 
+   window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentLang = urlParams.get('lang');
+      if(!currentLang)  currentLang = 'zh';
+   };
+
       // document.body.appendChild(container); // 9. 將容器附加到網頁中的某個元素（例如 body 或其他容器）
 </script>
 </body>
 </html>
-
