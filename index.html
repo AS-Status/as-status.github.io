@@ -34,6 +34,7 @@
    const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
    const connectInfo = document.querySelector("#connectInfo");
    const langz = document.querySelector("#lang");
+   const contx = document.querySelector("#statusContainer");
    var lastdatetime = new Date(); // 取得當前時間
 
    function CreateBox(elementName, curStatus, lastupdate) {
@@ -109,7 +110,6 @@
          }
          return response.json();
       }).then(data => {
-         var contx = document.querySelector("#statusContainer");
          contx.innerHTML = "";
          const currentTime = new Date(); // 取得當前時間
          data.forEach(function(item) {
@@ -135,6 +135,7 @@
 
    langz.addEventListener("click", function(e) {
       currentLang = currentLang == 'zh' ? 'en' : 'zh';
+      init();
    });
 
    setInterval(() => {
@@ -142,6 +143,7 @@
    }, 60000); // 每 60 秒更新一次
 
    document.addEventListener("DOMContentLoaded", () => {
+      langz.style.cursor = "pointer";
       init();
    });
 
