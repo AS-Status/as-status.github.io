@@ -81,7 +81,7 @@
    }
 
    function timeAgo(diffInSeconds) {
-      if(diffInSeconds < 60) { return diffInSeconds + (currentLang === 'zh' ? " 秒前" : " seconds ago"; }
+      if(diffInSeconds < 60) { return diffInSeconds + (currentLang === 'zh' ? " 秒前" : " seconds ago"); }
       const diffInMinutes = Math.floor(diffInSeconds / 60);
       if(diffInMinutes < 60) {
          return diffInMinutes + (currentLang === 'zh' ? " 分鐘前" : "  minutes ago");
