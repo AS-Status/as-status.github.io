@@ -117,7 +117,7 @@
             const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
             let mins = Math.floor(diffInSeconds / 60);  // 分
             if(mins > parseInt(item["period"]))  item["status"] = "ERROR";
-            let namez = currentLang === 'zh' ? item["service name"] : item[currenLang];
+            let namez = currentLang === 'zh' ? item["service name"] : item[currentLang];
             let divz = CreateBox(namez, item["status"], timeAgo(diffInSeconds));
             contx.appendChild(divz);
 	 });
@@ -130,7 +130,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       currentLang = urlParams.get('lang');
       if(!currentLang)  currentLang = 'zh';
-      langz.innerHTML = currentLang == 'zh' ? 'English' : '繁體中文';
+      langz.innerHTML = currentLang == 'zh' ? 'English' : 'zh_TW';
    };
 
    langz.addEventListener("click", function(e) {
