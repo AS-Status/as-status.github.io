@@ -21,7 +21,7 @@
       </div>
       <!-- Status Overview -->
       <h2 class="text-lg font-semibold mb-4">Status example: 
-         <small>AVAILABLE: ✔️, UNAVAILABLE: ❌, ERROR: ⚠️</small>
+         <small>AVAILABLE: ✔️, UNAVAILABLE: ❌, WARNING: ⚠️</small>
       </h2>
        <!-- Status Cards Grid -->
        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="statusContainer"></div>
@@ -30,7 +30,7 @@
   </div>
 <script>
    var currentLang = 'zh';
-   const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "ERROR": "⚠️"};
+   const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "WARNING": "⚠️"};
    const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
    const connectInfo = document.querySelector("#connectInfo");
    const langz = document.querySelector("#lang");
@@ -51,7 +51,7 @@
       const checkMark = document.createElement('div');
       let colorz = "green";
       if(curStatus == "UNAVAILABLE")  colorz = "red";
-      else if(curStatus == "ERROR")   colorz = "yellow";
+      else if(curStatus == "WARNING")   colorz = "yellow";
       checkMark.className = 'text-' + colorz + '-500 text-2xl';
       checkMark.textContent = statuz[curStatus];  //'✔️';
       // 5. 將 <h3> 和 ✔️ 圖示放到 "flex" 容器中
@@ -65,7 +65,7 @@
       if(currentLang === 'zh') {
          txt = '正常';
          if(curStatus == "UNAVAILABLE") txt = '中斷';
-         else if(curStatus == "ERROR")  txt = '警告';
+         else if(curStatus == "WARNING")  txt = '警告';
       }
       statusLabel.textContent = txt;
       // 7. 建立描述 <p>
@@ -116,7 +116,7 @@
             const givenTime = new Date(item["updatetime"]); // 將 ISO 字串轉換為 Date 物件
             const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
             let mins = Math.floor(diffInSeconds / 60);  // 分
-            if(mins > parseInt(item["period"]))  item["status"] = "ERROR";
+            if(mins > parseInt(item["period"]))  item["status"] = "WARNING";
             let namez = currentLang === 'zh' ? item["service name"] : item[currentLang];
             let divz = CreateBox(namez, item["status"], timeAgo(diffInSeconds));
             contx.appendChild(divz);
