@@ -45,7 +45,8 @@
    </div>
    <div class="footer">
       <p>
-         TEL：+886-2-2789-8855 Email：its@sinica.edu.tw，<a href="https://its.sinica.edu.tw/pages/1449" target=_blank>Contact us</a>
+         TEL：+886-2-2789-8855 Email：its@sinica.edu.tw | 
+	 <a href="https://its.sinica.edu.tw/pages/1449" target=_blank>Contact us</a> | 
 	 <a href="https://its.sinica.edu.tw/declaration" target=_blank>Open Data Statement</a> | 
 	 <a href="https://its.sinica.edu.tw/pages/1450" target=_blank>Privacy Policy & Security Policy</a>
       </p>
@@ -53,7 +54,7 @@
 <script>
    var currentLang = 'en';
    const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "WARNING": "⚠️"};
-   const monitors = ["中研院官方網站", "Email 服務", "google calendar", "google drive", "VPN"];
+   const monitors = ["中研院官方網站", "Email 服務", "Google Calendar", "Google Crive", "VPN"];
    const connectInfo = document.querySelector("#connectInfo");
    const langz = document.querySelector("#lang");
    const contx = document.querySelector("#statusContainer");
@@ -143,9 +144,12 @@
             let divz = CreateBox(namez, item["status"], timeAgo(diffInSeconds));
             contx.appendChild(divz);
 	 });
+     /*
          const givenTime = new Date(lastdatetime.toISOString());
          const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
          connectInfo.innerHTML = timeAgo(diffInSeconds) + (currentLang === 'zh' ? "更新" : " Updated");
+     */
+         connectInfo.innerHTML = lastdatetime + " Updated");
       }).catch(error => { console.error('Error fetching data:', error); });
    }
    window.onload = function() {
