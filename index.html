@@ -152,7 +152,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       currentLang = urlParams.get('lang');
       if(!currentLang)  currentLang = 'en';
-      langz.innerHTML = currentLang == 'zh' ? 'English' : '中文';
+      langz.innerHTML = "";  // 隱藏中英文切換功能 currentLang == 'zh' ? 'English' : '中文';
    };
 
    langz.addEventListener("click", function(e) {
