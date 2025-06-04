@@ -129,7 +129,7 @@
    window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       currentLang = urlParams.get('lang');
-      if(!currentLang)  currentLang = 'zh';
+      if(!currentLang)  currentLang = 'en';
       langz.innerHTML = currentLang == 'zh' ? 'English' : '中文';
    };
 
@@ -146,9 +146,6 @@
       langz.style.cursor = "pointer";
       init();
    });
-
-
-      // document.body.appendChild(container); // 9. 將容器附加到網頁中的某個元素（例如 body 或其他容器）
 </script>
 </body>
 </html>
