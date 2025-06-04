@@ -144,12 +144,12 @@
             let divz = CreateBox(namez, item["status"], timeAgo(diffInSeconds));
             contx.appendChild(divz);
 	 });
-     /*
          const givenTime = new Date(lastdatetime.toISOString());
+     /*
          const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
          connectInfo.innerHTML = timeAgo(diffInSeconds) + (currentLang === 'zh' ? "更新" : " Updated");
      */
-         connectInfo.innerHTML = lastdatetime + " Updated";
+         connectInfo.innerHTML = givenTime + " Updated";
       }).catch(error => { console.error('Error fetching data:', error); });
    }
    window.onload = function() {
