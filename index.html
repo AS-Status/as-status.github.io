@@ -153,7 +153,7 @@
             let mins = Math.floor(diffInSeconds / 60);  // 分
             if(mins > parseInt(item["period"]))  item["status"] = "WARNING";
             let namez = currentLang === 'zh' ? item["service name"] : item[currentLang];
-            let divz = CreateBox(namez, item["status"], timeAgo(diffInSeconds));
+            let divz = CreateBox(namez, item["status"], formatDate(item["updatetime"]));  //timeAgo(diffInSeconds));
             contx.appendChild(divz);
 	 });
      /*
