@@ -10,6 +10,21 @@
     body {
       font-family: 'Noto Sans TC', sans-serif;
     }
+    .footer {
+       position: fixed;
+       bottom: 0;
+       width: 100%;
+       background-color: #f8f9fa;
+       text-align: center;
+       padding: 10px 0;
+       box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer p {
+       margin: 0;
+       font-size: 14px;
+       color: #6c757d;
+    }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
@@ -27,7 +42,10 @@
        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="statusContainer"></div>
        <br>
        <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold" id="connectInfo">連線中...</span>
-  </div>
+   </div>
+   <div class="footer">
+      <p>TEL：+886-2-2789-8855 Email：its@sinica.edu.tw，<a href="https://its.sinica.edu.tw/pages/1449" target=_blank>Contact us</a></p>
+   </div>
 <script>
    var currentLang = 'en';
    const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "WARNING": "⚠️"};
