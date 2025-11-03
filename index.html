@@ -1,189 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Academia Sinica Service Status Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap">
-  <style>
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-    }
-    .footer {
-       position: fixed;
-       bottom: 0;
-       width: 100%;
-       background-color: #f8f9fa;
-       text-align: center;
-       padding: 10px 0;
-       box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Sinica Service Status Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .footer p {
-       margin: 0;
-       font-size: 14px;
-       color: #6c757d;
-    }
-  </style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .service-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-icon {
+            font-size: 1.8em;
+        }
+
+        .error-details {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .error-details.show {
+            display: block;
+        }
+
+        .error-item {
+            padding: 8px 0;
+            color: #856404;
+            font-size: 0.95em;
+        }
+
+        .error-item:not(:last-child) {
+            border-bottom: 1px solid #ffeaa7;
+        }
+
+        .sub-service {
+            font-weight: 600;
+            color: #d63031;
+        }
+
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center">
-   <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold text-gray-800">Academia Sinica <span class="text-black">Service Status Dashboard</span></h1>
-        <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold" id="lang"></span>
-      </div>
-      <!-- Status Overview -->
-      <h2 class="text-lg font-semibold mb-4">Status example: 
-         <small>AVAILABLE: ✔️, UNAVAILABLE: ❌, WARNING: ⚠️</small>
-      </h2>
-       <!-- Status Cards Grid -->
-       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="statusContainer"></div>
-       <br>
-       <span class="text-green-500 bg-green-100 px-3 py-1 rounded-full text-sm font-semibold" id="connectInfo">連線中...</span>
-   </div>
-   <div class="footer">
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Academia Sinica Service Status Dashboard</h1>
+            <p data-zh="中央研究院服務狀態監控" data-en=""></p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span style="font-size: 1.2em;">✔️</span>
+                <span data-zh="正常運作" data-en="AVAILABLE">AVAILABLE</span>
+            </div>
+            <div class="legend-item">
+                <span style="font-size: 1.2em;">❌</span>
+                <span data-zh="服務中斷" data-en="UNAVAILABLE">UNAVAILABLE</span>
+            </div>
+            <div class="legend-item">
+                <span style="font-size: 1.2em;">⚠️</span>
+                <span data-zh="異常警告" data-en="WARNING">WARNING</span>
+            </div>
+        </div>
+        <div id="status-container" class="loading" data-zh="載入服務狀態中..." data-en="Loading service status...">
+           Loading service status...
+        </div>
+        <div class="last-update" id="last-update"></div>
+    </div>
+
+    <div class="footer">
       <p>
          TEL：+886-2-2789-8855 Email：its@sinica.edu.tw | 
-	 <a href="https://its.sinica.edu.tw/pages/1449" target=_blank>Contact us</a> | 
-	 <a href="https://its.sinica.edu.tw/declaration" target=_blank>Open Data Statement</a> | 
-	 <a href="https://its.sinica.edu.tw/pages/1450" target=_blank>Privacy Policy & Security Policy</a>
+         <a href="https://its.sinica.edu.tw/pages/1449" target=_blank>Contact us</a> |
+         <a href="https://its.sinica.edu.tw/declaration" target=_blank>Open Data Statement</a> |
+         <a href="https://its.sinica.edu.tw/pages/1450" target=_blank>Privacy Policy & Security Policy</a> | 
+	 © 2025 Academia Sinica Copyright
       </p>
    </div>
+
 <script>
    var currentLang = 'en';
-   const statuz = {"AVAILABLE": "✔️", "UNAVAILABLE": "❌", "WARNING": "⚠️"};
-   const monitors = ["中研院官方網站", "Email 服務", "Google Calendar", "Google Crive", "VPN"];
-   const connectInfo = document.querySelector("#connectInfo");
    const langz = document.querySelector("#lang");
-   const contx = document.querySelector("#statusContainer");
-   var lastdatetime = new Date(); // 取得當前時間
 
-   function CreateBox(elementName, curStatus, lastupdate) {
-      const container = document.createElement('div');
-      container.className = 'p-4 border rounded-lg shadow-sm hover:shadow-md transition';
-      // 2. 建立內部的 "flex" 容器
-      const flexContainer = document.createElement('div');
-      flexContainer.className = 'flex items-center justify-between';
-      // 3. 建立標題 <h3>
-      const titlez = document.createElement('h3');
-      titlez.className = 'text-gray-700 font-semibold';
-      titlez.textContent = elementName;
-      // 4. 建立綠色的 "✔️" 圖示
-      const checkMark = document.createElement('div');
-      let colorz = "green";
-      if(curStatus == "UNAVAILABLE")  colorz = "red";
-      else if(curStatus == "WARNING")   colorz = "yellow";
-      checkMark.className = 'text-' + colorz + '-500 text-2xl';
-      checkMark.textContent = statuz[curStatus];  //'✔️';
-      // 5. 將 <h3> 和 ✔️ 圖示放到 "flex" 容器中
-      flexContainer.appendChild(titlez);
-      flexContainer.appendChild(checkMark);
-
-      // 6. 建立 "正常" 標籤 <span>
-      const statusLabel = document.createElement('span');
-      statusLabel.className = 'text-sm bg-' + colorz + '-100 text-' + colorz + '-700 px-2 py-1 rounded-full font-medium inline-block mt-2';
-      let txt = curStatus;
-      if(currentLang === 'zh') {
-         txt = '正常';
-         if(curStatus == "UNAVAILABLE") txt = '中斷';
-         else if(curStatus == "WARNING")  txt = '警告';
+   var serviceStatus = { // 模擬服務狀態數據
+      'Google 服務': {
+         overall: 'available',
+         subServices: {
+            'Google Calendar': 'available',
+            'Google Drive': 'warning',
+            'Email Service': 'available'
+         }
+      },
+      'DNS 服務': {
+         overall: 'available',
+         subServices: {
+            'DNS-140.109.1.10': 'available',
+            'DNS-140.109.13.10': 'available'
+         }
+      },
+      '本院認證服務': {
+         overall: 'available',
+         subServices: {
+            'FISA Service': 'available',
+            'SAML Service': 'available',
+            'OPENID Service': 'available'
+         }
+      },
+      'VPN Service': {
+         overall: 'available',
+         subServices: {}
+      },
+      'Network Service': {
+         overall: 'available',
+         subServices: {}
       }
-      statusLabel.textContent = txt;
-      // 7. 建立描述 <p>
-      const updateInfo = document.createElement('p');
-      updateInfo.className = 'text-gray-500 text-sm mt-1';
-      updateInfo.textContent = 'Last Refreshed: ' + lastupdate;   //1 分鐘前';
-      // 8. 將所有元素組合到父容器中
-      container.appendChild(flexContainer);
-      container.appendChild(statusLabel);
-      container.appendChild(updateInfo);
+   };
 
-      return container;
-   }
-   function formatDate(dateString) {
-      const date = new Date(dateString);
-      // 獲取年、月、日、時、分、秒
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份需 +1 並補零
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = '00'; // 固定為 '00'
-      // 組合成目標格式
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+   function getStatusIcon(status) {
+      switch(status) {
+         case 'available': return '✔️';
+         case 'unavailable': return '❌';
+         case 'warning': return '⚠️';
+         default: return '❓';
+      }
    }
 
-   function timeAgo(diffInSeconds) {
-      if(diffInSeconds < 60) { return diffInSeconds + (currentLang === 'zh' ? " 秒前" : " seconds ago"); }
-      const diffInMinutes = Math.floor(diffInSeconds / 60);
-      if(diffInMinutes < 60) {
-         return diffInMinutes + (currentLang === 'zh' ? " 分鐘前" : "  minutes ago");
-      }
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      if(diffInHours < 24) {
-         return diffInHours + (currentLang === 'zh' ? " 小時前" : "  hours earlier");
-      }
-      const diffInDays = Math.floor(diffInHours / 24);
-      if(diffInDays < 30) {
-         return diffInDays + (currentLang === 'zh' ? " 天前" : " days ago");
-      }
-      const diffInMonths = Math.floor(diffInDays / 30);
-      if(diffInMonths < 12) {
-         return diffInMonths + (currentLang === 'zh' ? " 個月前" : " months ago");
-      }
-      const diffInYears = Math.floor(diffInDays / 365);
-      return diffInYears + (currentLang === 'zh' ? " 年前" : " years prior");
+   function checkOverallStatus(subServices) {
+      const statuses = Object.values(subServices);
+      if (statuses.includes('unavailable')) return 'unavailable';
+      if (statuses.includes('warning')) return 'warning';
+      return 'available';
    }
+
+   function showServices() {
+      const container = document.getElementById('status-container');
+      container.className = 'status-grid';
+      container.innerHTML = '';
+
+      for(const [serviceName, serviceData] of Object.entries(serviceStatus)) {
+         const hasSubServices = Object.keys(serviceData.subServices).length > 0;
+         const overallStatus = hasSubServices ? 
+               checkOverallStatus(serviceData.subServices) : 
+               serviceData.overall;
+                
+         const hasErrors = overallStatus !== 'available';
+                const errorServices = hasSubServices ? 
+                    Object.entries(serviceData.subServices)
+                        .filter(([_, status]) => status !== 'available') : 
+                    [];
+
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                
+                card.innerHTML = `
+                    <div class="service-header">
+                        <div class="service-name">${serviceName}</div>
+                        <div class="status-icon">${getStatusIcon(overallStatus)}</div>
+                    </div>
+                    ${hasErrors && errorServices.length > 0 ? `
+                        <div class="error-details show">
+                            <strong>發生錯誤的服務：</strong>
+                            ${errorServices.map(([name, status]) => `
+                                <div class="error-item">
+                                    <span class="sub-service">${name}</span>: ${getStatusIcon(status)} ${status.toUpperCase()}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(card);
+      }
+      const now = new Date(); // 更新時間
+      document.getElementById('last-update').textContent = `最後更新時間: ${now.toLocaleString('zh-TW')}`;
+    }
    
-   function init() {  // 初始化
+   // 檢查服務 0)無找到  1)找到但狀態無異動  2)找到，狀態變正常 3)找到，狀態變不正常
+   function chkStatus(srvs, name, statuz) {
+      let xtus = 0;
+      for(const [serviceName, serviceStatus] of Object.entries(srvs)) {
+         if(serviceName == name) {
+            if(serviceStatus != statuz) {
+               xtus = statuz.toLowerCase() == 'available' ? 2 : 3;
+	    } else {
+               xtus = 1; // 找到但狀態無異動
+	    }
+            break;
+         }
+      }
+      return xtus;
+   }
+
+   // 更新目前狀態
+   function renderServices() {
       let url = "https://script.google.com/macros/s/AKfycbzAknvL7tYEJuzDC1W8KqtTJASTvgUTDHs7DwJPXKw0A_KhqLfKlQhoubcoxV_h1F4x/exec";
+
       fetch(url).then(response => {
          if(!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
          }
-         return response.json();
+         return;  //  response.json();
       }).then(data => {
          contx.innerHTML = "";
          const currentTime = new Date(); // 取得當前時間
          data.forEach(function(item) {
-            const givenTime = new Date(item["updatetime"]); // 將 ISO 字串轉換為 Date 物件
-            const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
-            let mins = Math.floor(diffInSeconds / 60);  // 分
-            if(mins > parseInt(item["period"]))  item["status"] = "WARNING";
-            let namez = currentLang === 'zh' ? item["service name"] : item[currentLang];
-            let divz = CreateBox(namez, item["status"], formatDate(item["updatetime"]));  //timeAgo(diffInSeconds));
-            contx.appendChild(divz);
-	 });
-     /*
-         const givenTime = new Date(lastdatetime.toISOString());
-         const diffInSeconds = Math.floor((currentTime - givenTime) / 1000); // 計算時間差（以秒為單位）
-         connectInfo.innerHTML = timeAgo(diffInSeconds) + (currentLang === 'zh' ? "更新" : " Updated");
-     */
-         connectInfo.innerHTML = formatDate(lastdatetime) + " Updated";
+            for(const [serviceName, serviceData] of Object.entries(serviceStatus)) {
+               const hasSubServices = Object.keys(serviceData.subServices).length > 0;
+               if(serviceName != item['en']) {
+                  if(hasSubService) {
+                     let stus = chkStatus(serviceData.subServices, item['en'], item['status']);
+		  }
+	       } 
+               serviceStatus[serviceName].overall = item.status; // 設定狀態    
+               break;
+	    }
+         });
       }).catch(error => { console.error('Error fetching data:', error); });
    }
+
    window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       currentLang = urlParams.get('lang');
       if(!currentLang)  currentLang = 'en';
-      langz.innerHTML = "";  // 隱藏中英文切換功能 currentLang == 'zh' ? 'English' : '中文';
+      // langz.innerHTML = "";  // 隱藏中英文切換功能 currentLang == 'zh' ? 'English' : '中文';
+      renderServices();  // 初始化
+      setInterval(renderServices, 60000);  // 每30秒更新一次 (實際應用中應該從API獲取數據)
    };
-
-   langz.addEventListener("click", function(e) {
-      currentLang = currentLang == 'zh' ? 'en' : 'zh';
-      self.location.replace(window.location.origin + window.location.pathname + "?lang=" + currentLang);
-   });
-
-   setInterval(() => {
-      init();
-   }, 60000); // 每 60 秒更新一次
-
-   document.addEventListener("DOMContentLoaded", () => {
-      langz.style.cursor = "pointer";
-      init();
-   });
 </script>
 </body>
 </html>
